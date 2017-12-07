@@ -66,10 +66,19 @@ function make_upload($file_full, $ext, $new_dir)
         $imdb = $matches[0];
 	}
 	
+	if (preg_match('/hdtv|sdtv/i', $file)) {
+	  $cat = 5;
+	}elseif (preg_match('/xvid|brrip|bdrip|dvdrip|hdrip/i', $file)) {
+	  $cat = 10;
+	}else{
+	  $cat = 9;
+	}
+	
 	$torrent_info = Array();
 	$torrent_info['name'] = $file;
 	$torrent_info['descr'] = $nfo;
 	$torrent_info['url'] = $imdb;
+	$torrent_info['type'] = $cat;
 	upload_torrent($torrent, $torrent_info, $file);
 }
 
@@ -97,10 +106,9 @@ function upload_torrent($torrent, $torrent_info, $file)
 	$torrent_info['poster']='';	
 	$torrent_info['youtube']='';	
 	$torrent_info['file'] = new CURLFile (TORRENT_PATH.'/'.$file . ".torrent");	
-	$torrent_info['description']='Br0ken Uploaders Bot';	
+	$torrent_info['description']='Br0kens Uploader Bot';	
 	$torrent_info['fontfont']='0';
 	$torrent_info['fontsize']='0';
-	$torrent_info['type']='9';
 	$torrent_info['request']='0';
 	$torrent_info['release_group']='none';
 	$torrent_info['strip']=	'strip';
