@@ -1,5 +1,5 @@
 # U232-Uploader
-This is a single category uploader bot for u232 code sites.  It was built for racing torrents to site.
+This is a <del>single</del> multiple category uploader bot for u232 code sites.
 
 ## Requirements
 * PHP
@@ -9,7 +9,6 @@ This is a single category uploader bot for u232 code sites.  It was built for ra
 ## Setup for scene axx
 1. Activate your quick login option on u232 site.
 2. Edit the directory paths, announce url with passkey, and q login.
-3. Change the type number on line 81 to the category you want to up load to. ex: $torrent_info['type']='9';
 
 ## Setup for non scene axx
 1. Activate your quick login option on u232 site.
@@ -24,3 +23,5 @@ This script was made to work best with rtorrent/rutorrent.  Before trying to upl
 * Create error directory for failed uploads.
 * Create a bot log file, writes things like "starting on XYZ... blah blah". Can be useful when daemonized.
 * <del>Multiple category for non site racing.</del>
+* Auto cleanup MOVE_PATH.
+* Add TMDB API for movies and tv shows.
