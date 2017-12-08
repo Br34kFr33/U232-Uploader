@@ -66,12 +66,20 @@ function make_upload($file_full, $ext, $new_dir)
         $imdb = $matches[0];
 	}
 	
-	if (preg_match('/hdtv|sdtv/i', $file)) {
-	  $cat = 5;
-	}elseif (preg_match('/xvid|brrip|bdrip|dvdrip|hdrip/i', $file)) {
-	  $cat = 10;
-	}else{
-	  $cat = 9;
+	switch (true) {
+	case preg_match('/hdtv|sdtv|pdtv|tvrip/i', $file) : $cat = 5; break;
+	case preg_match('/xvid|brrip|xvid|dvdrip|hdrip/i', $file) : $cat = 10; break;
+	case preg_match('/x86|x64|win64|lnx64|macosx/i', $file) : $cat = 1; break;
+	case preg_match('/wii|wiiu|xbox|xbox360|ps3|ps4/i', $file) : $cat = 2; break;
+	case preg_match('/dvdr/i', $file) : $cat = 3; break;
+	case preg_match('/mp3|flac|lossless|cd|compilation|album|albums|vinyl/i', $file) : $cat = 4; break;
+	case preg_match('/xxx/i', $file) : $cat = 6; break;
+	case preg_match('/psp/i', $file) : $cat = 7; break;
+	case preg_match('/ps2/i', $file) : $cat = 8; break;
+	case preg_match('/anime/i', $file) : $cat = 9; break;
+	case preg_match('/720p|1080p/i', $file) : $cat = 11; break;
+	case preg_match('/pc/i', $file) : $cat = 12; break;
+	default : $cat = 9;
 	}
 	
 	$torrent_info = Array();
