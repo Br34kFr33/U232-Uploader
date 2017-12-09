@@ -20,8 +20,9 @@ This is a <del>single</del> multiple category uploader bot for u232 code sites.
 This script was made to work best with rtorrent/rutorrent.  Before trying to upload anything run the script once so it can grab the cookie (the first login will fail).
 
 ## TODO
-* Create error directory for failed uploads.
+* <del>Create error directory for failed uploads.</del>
 * Create a bot log file, writes things like "starting on XYZ... blah blah". Can be useful when daemonized.
+* Create job log, writes a new log for every upload.  Will write torrent info in log like "Name, nfo, imdb, category...
 * <del>Multiple category for non site racing.</del>
 * Auto cleanup MOVE_PATH.
 * Add TMDB API for movies and tv shows.
