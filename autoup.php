@@ -2,7 +2,11 @@
 define('ROOT_PATH', '/home/upload');
 define('UPLOAD_PATH', ROOT_PATH.'/scan');
 define('MOVE_PATH', ROOT_PATH.'/move');
+define('ERROR_PATH', ROOT_PATH.'/error');
 define('TORRENT_PATH', ROOT_PATH.'/torrent');
+
+define('LOG_FILE', ROOT_PATH.'/bot.log');
+define('JOB_LOG', ROOT_PATH.'/jobs');
 
 define('SITE_ROOT', 'http://testing.site');
 define('ANNOUNCE_URL', 'http://testing.site/announce.php?torrent_pass=00000001a2d74d8af3afcfa33d941fb2');
@@ -22,9 +26,11 @@ function make_login()
 	$ch = curl_init($login_url);
 	curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE);
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 	curl_setopt($ch, CURLOPT_COOKIEJAR, 'cookie.txt');
 	$rez = curl_exec($ch);
-	if ($rez) die('Cannot login!');
+	if (!$rez) die('Cannot login!');
+	echo file_put_contents(LOG_FILE, 'Cannot login! '.date('m/d/Y h:i:s').'\n', FILE_APPEND);
 }
 
 function make_torrent($file)
@@ -36,6 +42,7 @@ function make_torrent($file)
 	exec($cmd);
 	if (file_exists($output)) return $output;
 	else die('Cannot make torrent!');
+	echo file_put_contents(LOG_FILE, "Cannot make $file torrent! ".date('m/d/Y h:i:s')."\n", FILE_APPEND);
 }
 
 function make_upload($file_full, $ext, $new_dir)
@@ -56,8 +63,8 @@ function make_upload($file_full, $ext, $new_dir)
 	$filename = $a;
 	}
 	$nfo = file_get_contents($a);
-	$match = array("/[^a-zA-Z0-9-+.,&=??????:;*'\"???\/\@\[\]\(\)\s]/","/((\x0D\x0A\s*){3,}|(\x0A\s*){3,}|(\x0D\s*){3,})/","/\x0D\x0A|\x0A|\x0D/");
-	$replace = array( "","\n\n","\n");
+	$match = array("/[^a-zA-Z0-9-._&=?:'\s]/", "/\s{2,}/");
+	$replace = array("", " ");
 	$nfo = preg_replace($match, $replace, trim($nfo));
 
 	$imdb = "";
@@ -66,7 +73,7 @@ function make_upload($file_full, $ext, $new_dir)
         $imdb = $matches[0];
 	}
 	
-	switch (true) {
+	switch(true) {
 	case preg_match('/hdtv|sdtv|pdtv|tvrip/i', $file) : $cat = 5; break;
 	case preg_match('/xvid|brrip|xvid|dvdrip|hdrip/i', $file) : $cat = 10; break;
 	case preg_match('/x86|x64|win64|lnx64|macosx/i', $file) : $cat = 1; break;
@@ -81,12 +88,12 @@ function make_upload($file_full, $ext, $new_dir)
 	case preg_match('/pc/i', $file) : $cat = 12; break;
 	default : $cat = 9;
 	}
-	
+
 	$torrent_info = Array();
 	$torrent_info['name'] = $file;
 	$torrent_info['descr'] = $nfo;
 	$torrent_info['url'] = $imdb;
-	$torrent_info['type'] = $cat;
+	$torrent_info['type']= $cat;
 	upload_torrent($torrent, $torrent_info, $file);
 }
 
@@ -95,6 +102,7 @@ function test_login()
 	$login_url = SITE_ROOT.'/mytorrents.php';
 	$ch = curl_init($login_url);
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 	curl_setopt($ch, CURLOPT_COOKIEFILE, 'cookie.txt');
 	$rez = curl_exec($ch);
 	if (!$rez) make_login();
@@ -106,6 +114,7 @@ function upload_torrent($torrent, $torrent_info, $file)
 	$upload_url = SITE_ROOT.'/upload.php';
 	$ch = curl_init($upload_url);
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 	curl_setopt($ch, CURLOPT_COOKIEJAR, 'cookie.txt');
 	curl_setopt($ch, CURLOPT_COOKIEFILE, 'cookie.txt');
 	$rez = curl_exec($ch);
@@ -121,10 +130,16 @@ function upload_torrent($torrent, $torrent_info, $file)
 	$torrent_info['release_group']='none';
 	$torrent_info['strip']=	'strip';
 
-	print_r($torrent_info);
+	$fh = fopen(JOB_LOG.'/'.$file, 'a') or die;
+	$string_data = "Name: ".$torrent_info['name'].PHP_EOL."Added: ".date("m/d/Y h:i:s").PHP_EOL."NFO: ".$torrent_info['descr']
+	.PHP_EOL."IMDB: ".$torrent_info['url'].PHP_EOL."Category: ".$torrent_info['type'];
+	fwrite($fh, $string_data);
+	fclose($fh);
+
 	$upload_url = SITE_ROOT.'/takeupload.php';
 	$ch = curl_init($upload_url);
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 	curl_setopt($ch, CURLOPT_HEADER, 1); 
 	curl_setopt($ch, CURLOPT_POST, 1);
 	curl_setopt($ch, CURLOPT_POSTFIELDS, $torrent_info);
@@ -136,9 +151,10 @@ function upload_torrent($torrent, $torrent_info, $file)
 		make_login();
 		goto loged_in;
 	}
-	
-	if (strpos($rez,'Upload failed!')) echo "$torrent failed \n";
-	else echo "$torrent uploaded \n";
+
+	strpos($rez,'Upload failed!') ? file_put_contents(LOG_FILE, "$file failed on ".date("m/d/Y h:i:s")."\n", FILE_APPEND) && move(MOVE_PATH.'/'.$file, ERROR_PATH) :
+	file_put_contents(LOG_FILE, "$file uploaded on ".date("m/d/Y h:i:s")."\n",FILE_APPEND);
+	//echo $rez;
 }
 
 //scan folder for files
@@ -163,8 +179,6 @@ function scan_folder()
 		make_upload($file_full, $ext, $dir_done);
 	}
 }
-
 test_login();
 scan_folder();
-
 ?>
