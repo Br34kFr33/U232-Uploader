@@ -75,7 +75,7 @@ function make_upload($file_full, $ext, $new_dir)
 	
 	switch(true) {
 	case preg_match('/hdtv|sdtv|pdtv|tvrip/i', $file) : $cat = 5; break;
-	case preg_match('/xvid|brrip|xvid|dvdrip|hdrip/i', $file) : $cat = 10; break;
+	case preg_match('/xvid|brrip|dvdrip|hdrip/i', $file) : $cat = 10; break;
 	case preg_match('/x86|x64|win64|lnx64|macosx/i', $file) : $cat = 1; break;
 	case preg_match('/wii|wiiu|xbox|xbox360|ps3|ps4/i', $file) : $cat = 2; break;
 	case preg_match('/dvdr/i', $file) : $cat = 3; break;
