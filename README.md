@@ -8,7 +8,7 @@ This is a <del>single</del> multiple category uploader bot for u232 code sites.
 
 ## Setup for scene axx
 1. Activate your quick login option on u232 site.
-2. Edit the directory paths, announce url with passkey, and q login.
+2. Edit the directory paths, announce url <del>with passkey</del>, and q login.
 3. Create bot.log file.
 
 ## Setup for non scene axx
